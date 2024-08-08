@@ -11,7 +11,7 @@ def send_to_operation_server(host, port, data):
     return result
 
 def main():
-    host = '192.168.1.100'  # Dirección IP del servidor principal
+    host = '192.168.56.2'  # Dirección IP del servidor principal
     port = 5000
 
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -41,8 +41,8 @@ def main():
 
         # Enviar tareas a los servidores de operación de forma asíncrona
         with ThreadPoolExecutor(max_workers=2) as executor:
-            future1 = executor.submit(send_to_operation_server, '192.168.1.101', 5001, data1)
-            future2 = executor.submit(send_to_operation_server, '192.168.1.102', 5002, data2)
+            future1 = executor.submit(send_to_operation_server, '192.168.56.3', 5001, data1)
+            future2 = executor.submit(send_to_operation_server, '192.168.56.4', 5002, data2)
 
             result1 = future1.result()
             result2 = future2.result()

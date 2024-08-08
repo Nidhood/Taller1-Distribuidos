@@ -6,7 +6,7 @@ def multiply_matrices(a, b):
     return np.dot(a, b).tolist()
 
 def main():
-    host = '192.168.1.102'  # Dirección IP del servidor de operación 2
+    host = '192.168.56.4'  # Dirección IP del servidor de operación 2
     port = 5002
 
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
