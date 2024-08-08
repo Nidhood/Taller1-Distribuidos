@@ -5,34 +5,43 @@ import numpy as np
 def multiply_matrices(a, b):
     return np.dot(a, b).tolist()
 
-def print_matrices_side_by_side(matrix_a, matrix_b, result):
+def print_matrices_vertically(matrix_a, matrix_b, result):
     max_rows = max(len(matrix_a), len(matrix_b), len(result))
+    max_cols_a = max(len(row) for row in matrix_a) if matrix_a else 0
+    max_cols_b = max(len(row) for row in matrix_b) if matrix_b else 0
+    max_cols_r = max(len(row) for row in result) if result else 0
 
-    print("Matriz A".ljust(20), "Matriz B".ljust(20), "Resultado")
-    print("=" * 60)
+    # Header
+    print("Matriz A".ljust(max_cols_a * 8 + 4), end="")
+    print("Matriz B".ljust(max_cols_b * 8 + 4), end="")
+    print("Resultado".ljust(max_cols_r * 8 + 4))
+    print("=" * (max_cols_a * 8 + max_cols_b * 8 + max_cols_r * 8 + 12))
 
+    # Print matrices
     for i in range(max_rows):
-        # Imprimir fila de Matriz A
+        # Print row of Matriz A
         if i < len(matrix_a):
-            print(" | ".join([f"{round(x, 2):7}" for x in matrix_a[i]]), end="")
+            row_a = " | ".join([f"{round(x, 2):7}" for x in matrix_a[i]])
         else:
-            print(" " * (len(matrix_a[0]) * 8), end="")
+            row_a = " " * (max_cols_a * 8)
 
-        print("    ", end="")  # Espacio entre matrices
-
-        # Imprimir fila de Matriz B
+        # Print row of Matriz B
         if i < len(matrix_b):
-            print(" | ".join([f"{round(x, 2):7}" for x in matrix_b[i]]), end="")
+            row_b = " | ".join([f"{round(x, 2):7}" for x in matrix_b[i]])
         else:
-            print(" " * (len(matrix_b[0]) * 8), end="")
+            row_b = " " * (max_cols_b * 8)
 
-        print("    ", end="")  # Espacio entre matrices
-
-        # Imprimir fila del Resultado
+        # Print row of Resultado
         if i < len(result):
-            print(" | ".join([f"{round(x, 2):7}" for x in result[i]]))
+            row_r = " | ".join([f"{round(x, 2):7}" for x in result[i]])
         else:
-            print("")
+            row_r = " " * (max_cols_r * 8)
+
+        # Print all rows
+        print(row_a.ljust(max_cols_a * 8 + 4), end="")
+        print(row_b.ljust(max_cols_b * 8 + 4), end="")
+        print(row_r)
+
 
 def main():
     host = '192.168.56.3'  # Dirección IP del servidor de operación 1
