@@ -4,7 +4,7 @@ import numpy as np
 from concurrent.futures import ThreadPoolExecutor
 
 def send_to_operation_server(host, port, data):
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
         s.connect((host, port))
         s.send(json.dumps(data).encode())
         result = json.loads(s.recv(4096).decode())
