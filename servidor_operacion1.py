@@ -5,7 +5,7 @@ import numpy as np
 def multiply_matrices(a, b):
     return np.dot(a, b).tolist()
 
-def print_matrices_vertically(matrix_a, matrix_b, result):
+def print_matrices(matrix_a, matrix_b, result):
     max_rows = max(len(matrix_a), len(matrix_b), len(result))
     max_cols_a = max(len(row) for row in matrix_a) if matrix_a else 0
     max_cols_b = max(len(row) for row in matrix_b) if matrix_b else 0
@@ -62,7 +62,7 @@ def main():
         result = multiply_matrices(matrices['a'], matrices['b'])
 
         # Mostrar el proceso de multiplicación de matrices:
-        print_matrices_side_by_side(matrices['a'], matrices['b'], result)
+        print_matrices(matrices['a'], matrices['b'], result)
 
         # Enviar el resultado al servidor principal:
         conn.send(json.dumps(result).encode())
