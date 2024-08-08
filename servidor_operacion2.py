@@ -6,24 +6,26 @@ def multiply_matrices(a, b):
     return np.dot(a, b).tolist()
 
 def main():
-    host = '192.168.56.4'  # Cambia según el servidor
-    port = 5002  # Puerto correspondiente al servidor
+    host = '192.168.56.4'  # Dirección IP del servidor de operación 2
+    port = 5002
 
-    server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_socket.bind((host, port))
+    server_socket.listen(1)
 
-    print(f"Servidor de operación escuchando en {host}:{port}")
+    print(f"Servidor de operacion 2 escuchando en {host}:{port}/TCP")
 
     while True:
-        data, addr = server_socket.recvfrom(4096)
+        conn, addr = server_socket.accept()
         print(f"Conexión establecida desde {addr}")
 
-        matrices = json.loads(data.decode())
+        data = conn.recv(4096).decode()
+        matrices = json.loads(data)
 
         result = multiply_matrices(matrices['a'], matrices['b'])
+        conn.send(json.dumps(result).encode())
 
-        # Enviar el resultado de vuelta al servidor principal
-        server_socket.sendto(json.dumps(result).encode(), addr)
+        conn.close()
 
 if __name__ == "__main__":
     main()

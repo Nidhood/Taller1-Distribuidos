@@ -4,25 +4,28 @@ import numpy as np
 from concurrent.futures import ThreadPoolExecutor
 
 def send_to_operation_server(host, port, data):
-    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
-        s.sendto(json.dumps(data).encode(), (host, port))
-        result, _ = s.recvfrom(4096)
-    return json.loads(result.decode())
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.connect((host, port))
+        s.send(json.dumps(data).encode())
+        result = json.loads(s.recv(4096).decode())
+    return result
 
 def main():
     host = '192.168.56.2'  # Dirección IP del servidor principal
     port = 5000
 
-    server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_socket.bind((host, port))
+    server_socket.listen(1)
 
-    print(f"Servidor principal escuchando en {host}:{port}")
+    print(f"Servidor principal escuchando en {host}:{port}/TCP")
 
     while True:
-        data, addr = server_socket.recvfrom(4096)
-        print(f"Datos recibidos de {addr}")
+        conn, addr = server_socket.accept()
+        print(f"Conexión establecida desde {addr}")
 
-        matrices = json.loads(data.decode())
+        data = conn.recv(4096).decode()
+        matrices = json.loads(data)
 
         N = matrices['N']
         matrix_a = matrices['matrix_a']
@@ -47,8 +50,8 @@ def main():
         # Combinar resultados
         final_result = result1 + result2
 
-        # Enviar el resultado de vuelta al cliente
-        server_socket.sendto(json.dumps(final_result).encode(), addr)
+        conn.send(json.dumps(final_result).encode())
+        conn.close()
 
 if __name__ == "__main__":
     main()
