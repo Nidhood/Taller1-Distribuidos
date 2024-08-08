@@ -14,7 +14,7 @@ def main():
     host = '192.168.56.2'  # Dirección IP del servidor principal
     port = 5000
 
-    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # Crear socket servidor con UDP
     server_socket.bind((host, port))
     server_socket.listen(1)
 
