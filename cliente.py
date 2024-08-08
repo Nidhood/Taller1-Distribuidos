@@ -6,7 +6,7 @@ def main():
     port = 5000
 
 
-    client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # Crear socket cliente con UDP
+    client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     client_socket.connect((host, port)) # Conectar al servidor principal
 
     # Parámetros de entrada

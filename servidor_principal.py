@@ -4,7 +4,7 @@ import numpy as np
 from concurrent.futures import ThreadPoolExecutor
 
 def send_to_operation_server(host, port, data):
-    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.connect((host, port))
         s.send(json.dumps(data).encode())
         result = json.loads(s.recv(4096).decode())
@@ -14,11 +14,11 @@ def main():
     host = '192.168.56.2'  # Dirección IP del servidor principal
     port = 5000
 
-    server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # Crear socket servidor con UDP
+    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_socket.bind((host, port))
     server_socket.listen(1)
 
-    print(f"Servidor principal escuchando en {host}:{port}")
+    print(f"Servidor principal escuchando en {host}:{port}/TCP")
 
     while True:
         conn, addr = server_socket.accept()
