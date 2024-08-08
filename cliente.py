@@ -2,7 +2,7 @@ import socket
 import json
 
 def main():
-    host = '192.168.52.2'  # Dirección IP del servidor principal
+    host = '192.168.56.2'  # Dirección IP del servidor principal
     port = 5000
 
 
