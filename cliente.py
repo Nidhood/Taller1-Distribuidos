@@ -29,7 +29,10 @@ def main():
     # Recibir el resultado
     result = client_socket.recv(4096).decode()
     print("Resultado de la multiplicación de matrices:")
-    print(result)
+
+    # Imprimir el resultado, con solo 2 decimales:
+    for row in json.loads(result):
+        print([round(x, 2) for x in row])
 
     client_socket.close()
 
