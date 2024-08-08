@@ -35,9 +35,12 @@ def main():
         mid = N // 2
         a1, a2 = matrix_a[:mid], matrix_a[mid:]
 
+        # Dividir la matriz B en dos partes
+        b1, b2 = matrix_b[:mid], matrix_b[mid:]
+
         # Preparar datos para los servidores de operación
-        data1 = {'a': a1, 'b': matrix_b}
-        data2 = {'a': a2, 'b': matrix_b}
+        data1 = {'a': a1, 'b': b1}
+        data2 = {'a': a2, 'b': b2}
 
         # Enviar tareas a los servidores de operación de forma asíncrona
         with ThreadPoolExecutor(max_workers=2) as executor:

@@ -12,7 +12,7 @@ def main():
     # Parámetros de entrada
     N = int(input("Ingrese la dimensión de las matrices: "))
 
-    # Crear matrices de ejemplo (puedes modificar esto para ingresar matrices manualmente)
+    # Crear matrices de ejemplo
     matrix_a = [[i * 1.1 for i in range(N)] for _ in range(N)]
     matrix_b = [[i * 2.2 for i in range(N)] for _ in range(N)]
 
