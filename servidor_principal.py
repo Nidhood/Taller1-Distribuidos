@@ -1,17 +1,21 @@
 import socket
 import json
 import numpy as np
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 def send_to_operation_server(host, port, data):
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        s.connect((host, port))
-        s.send(json.dumps(data).encode())
-        result = json.loads(s.recv(4096).decode())
-    return result
+    try:
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.connect((host, port))
+            s.send(json.dumps(data).encode())
+            result = json.loads(s.recv(4096).decode())
+        return result
+    except Exception as e:
+        print(f"Error al conectar con el servidor {host}:{port} - {e}")
+        return None
 
 def main():
-    host = '192.168.56.2'  # Dirección IP del servidor principal
+    host = '127.0.0.1'  # Dirección IP del servidor principal 192.168.56.2
     port = 5000
 
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -41,14 +45,25 @@ def main():
 
         # Enviar tareas a los servidores de operación de forma asíncrona
         with ThreadPoolExecutor(max_workers=2) as executor:
-            future1 = executor.submit(send_to_operation_server, '192.168.56.3', 5001, data1)
-            future2 = executor.submit(send_to_operation_server, '192.168.56.4', 5002, data2)
+            futures = {
+                executor.submit(send_to_operation_server, '192.168.56.3', 5001, data1): 'data1',
+                executor.submit(send_to_operation_server, '192.168.56.4', 5002, data2): 'data2'
+            }
 
-            result1 = future1.result()
-            result2 = future2.result()
+            results = {}
+            for future in as_completed(futures):
+                result = future.result()
+                if result is not None:
+                    results[futures[future]] = result
+
+            # Si uno de los servidores falla, reasignar la tarea al otro servidor
+            if 'data1' not in results:
+                results['data1'] = send_to_operation_server('192.168.56.4', 5002, data1)
+            if 'data2' not in results:
+                results['data2'] = send_to_operation_server('192.168.56.3', 5001, data2)
 
         # Combinar resultados
-        final_result = result1 + result2
+        final_result = results['data1'] + results['data2']
 
         conn.send(json.dumps(final_result).encode())
         conn.close()
