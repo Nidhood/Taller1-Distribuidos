@@ -3,7 +3,7 @@ import json
 
 def main():
     host = '127.0.0.1'  # Dirección IP del servidor principal 192.168.56.2
-    port = 5000
+    port = 5004
 
 
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -13,8 +13,8 @@ def main():
     N = int(input("Ingrese la dimensión de las matrices: "))
 
     # Crear matrices de ejemplo
-    matrix_a = [[i * 1.1 for i in range(N)] for _ in range(N)]
-    matrix_b = [[i * 2.2 for i in range(N)] for _ in range(N)]
+    matrix_a = [[i * j for i in range(N)] for j in range(N)]
+    matrix_b = [[i * j for i in range(N)] for j in range(N)]
 
     # Armar los datos a enviar
     data = {
