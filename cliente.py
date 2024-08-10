@@ -7,7 +7,7 @@ start_time = time.time()
 def print_matrix(matrix, name):
     print(f"\nMatriz {name}:")
     for row in matrix:
-        print("[" + ", ".join(f"{x}" for x in row) + "]")
+        print([round(x, 2) for x in row])
 
 def main():
     host = '127.0.0.1'  # Dirección IP del servidor principal
@@ -62,8 +62,7 @@ def main():
     print(f"Respuesta recibida.")
     print("Resultado de la multiplicación de matrices:")
     result_matrix = json.loads(result)
-    for row in result_matrix:
-        print("[" + ", ".join(f"{x:6.2f}" for x in row) + "]")
+    print_matrix(result_matrix, "Resultado")
 
     # Cerrar la conexión:
     client_socket.close()
