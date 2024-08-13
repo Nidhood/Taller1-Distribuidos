@@ -67,9 +67,11 @@ def main():
             if 'data1' not in results:
                 print("Reasignando cálculo de data1 al servidor 5002")
                 results['data1'] = send_to_operation_server(host, 5002, data1, 1)
+                print("Resultado recibido para data1")
             if 'data2' not in results:
                 print("Reasignando cálculo de data2 al servidor 5001")
                 results['data2'] = send_to_operation_server(host, 5001, data2, 2)
+                print("Resultado recibido para data2")
 
         # Combinar resultados
         final_result = results['data1'] + results['data2']
