@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+service MatrixMultiplication {
+  rpc Multiply (MatrixPair) returns (MatrixResult) {}
+}
+
+message MatrixPair {
+  repeated float matrix_a = 1;
+  repeated float matrix_b = 2;
+  int32 size = 3;
+}
+
+message MatrixResult {
+  repeated float result = 1;
+}

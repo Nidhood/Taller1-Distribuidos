@@ -1,57 +1,39 @@
-import socket
-import json
+import grpc
 from concurrent.futures import ThreadPoolExecutor, as_completed
+import matrix_multiplication_pb2
+import matrix_multiplication_pb2_grpc
 
-def send_to_operation_server(host, port, data, num):
-    try:
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            s.connect((host, port))
-            s.send(json.dumps(data).encode())
-            result = json.loads(s.recv(4096).decode())
-        return result
-    except Exception as e:
-        print(f"Error al conectar con el servidor de operación {num} {host}:{port} - {e}")
-        return None
 
-def main():
-    host = '127.0.0.1'  # Dirección IP del servidor principal 192.168.56.2
-    port = 5004         # Puerto libre para la conexión con el servidor principal
+class MatrixMultiplicationServicer(matrix_multiplication_pb2_grpc.MatrixMultiplicationServicer):
 
-    # Lógica para abrir las conexiones con el servidor principal
-    print("Iniciando servidor principal")
-    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server_socket.bind((host, port))
-    server_socket.listen(1)
-    print(f"Servidor principal escuchando en {host}:{port}/TCP")
+    def Multiply(self, request, context):
+        print("\n\n ******************************** \n\n")
+        print("Servidor Principal: Recibida solicitud de multiplicación")
+        size = request.size
+        matrix_a = request.matrix_a
+        matrix_b = request.matrix_b
 
-    # Lógica para recibir las matrices y dividirlas
-    while True:
-        print("Esperando conexión de cliente...")
-        conn, addr = server_socket.accept()
-        print(f"Conexión establecida desde {addr}")
-        data = conn.recv(4096).decode()
-        print("Datos recibidos del cliente")
-        matrices = json.loads(data)
-        N = matrices['N']
-        matrix_a = matrices['matrix_a']
-        matrix_b = matrices['matrix_b']
+        print(f"Servidor Principal: Tamaño de la matriz: {size}")
+        print(f"Datos enviados al servidor (matriz A): {matrix_a}")
+        print(f"Datos enviados al servidor (matriz B): {matrix_b}")
 
         # Dividir la matriz A en dos partes:
-        mid = N // 2
+        mid = size * size // 2
         a1, a2 = matrix_a[:mid], matrix_a[mid:]
 
         # Dividir la matriz B en dos partes:
         b1, b2 = matrix_b[:mid], matrix_b[mid:]
 
-        # Preparar datos para los servidores de operación
+        print(f"Servidor Principal: Tamaño de la matriz A1: {len(a1)}, B1: {len(b1)}")
+        print(f"Servidor Principal: Tamaño de la matriz A2: {len(a2)}, B2: {len(b2)}")
+
         data1 = {'a': a1, 'b': b1}
         data2 = {'a': a2, 'b': b2}
 
-        # Enviar tareas a los servidores de operación de forma asíncrona
         with ThreadPoolExecutor(max_workers=2) as executor:
             futures = {
-                executor.submit(send_to_operation_server, host, 5001, data1, 1): 'data1',
-                executor.submit(send_to_operation_server, host, 5002, data2, 2): 'data2'
+                executor.submit(self.send_to_operation_server, '127.0.0.1', 5001, data1, size): 'data1',
+                executor.submit(self.send_to_operation_server, '127.0.0.1', 5002, data2, size): 'data2'
             }
 
             results = {}
@@ -60,25 +42,56 @@ def main():
                 result = future.result()
                 if result is not None:
                     results[data_key] = result
-                    print(f"Resultado recibido para {data_key}")
-                else:
-                    print(f"Fallo en el cálculo de {data_key}")
 
             if 'data1' not in results:
-                print("Reasignando cálculo de data1 al servidor 5002")
-                results['data1'] = send_to_operation_server(host, 5002, data1, 1)
-                print("Resultado recibido para data1")
+                print("Servidor Principal: Reintentando data1 en el servidor 5002")
+                results['data1'] = self.send_to_operation_server('127.0.0.1', 5002, data1, size)
             if 'data2' not in results:
-                print("Reasignando cálculo de data2 al servidor 5001")
-                results['data2'] = send_to_operation_server(host, 5001, data2, 2)
-                print("Resultado recibido para data2")
+                print("Servidor Principal: Reintentando data2 en el servidor 5001")
+                results['data2'] = self.send_to_operation_server('127.0.0.1', 5001, data2, size)
+            if results.get('data1') is None or results.get('data2') is None:
+                context.set_code(grpc.StatusCode.UNKNOWN)
+                context.set_details('No se pudieron obtener resultados de los servidores de operación')
+                print("Servidor Principal: No se pudieron obtener resultados de los servidores de operación")
+                return matrix_multiplication_pb2.MatrixResult(result=[])
 
-        # Combinar resultados
+        print("Servidor Principal: Combinando resultados")
+
+        # Convert results to integers if they are floats
+        results['data1'] = [int(x) for x in results['data1']]
+        results['data2'] = [int(x) for x in results['data2']]
+
+        print(f"Datos recibidos al servidor (matriz R1): {results.get('data1')}")
+        print(f"Datos recibidos al servidor (matriz R2): {results.get('data2')}")
+
         final_result = results['data1'] + results['data2']
-        print("Enviando resultado final al cliente")
-        conn.send(json.dumps(final_result).encode())
-        conn.close()
-        print("Conexión con el cliente cerrada")
 
-if __name__ == "__main__":
-    main()
+        print("Servidor Principal: Devolviendo resultado final")
+        return matrix_multiplication_pb2.MatrixResult(result=final_result)
+
+    def send_to_operation_server(self, host, port, data, size):
+        try:
+            with grpc.insecure_channel(f'{host}:{port}') as channel:
+                stub = matrix_multiplication_pb2_grpc.MatrixMultiplicationStub(channel)
+                response = stub.Multiply(matrix_multiplication_pb2.MatrixPair(
+                    matrix_a=data['a'],
+                    matrix_b=data['b'],
+                    size=size
+                ))
+            return response.result
+        except Exception as e:
+            print(f"Error al conectar con el servidor {host}:{port} - {e}")
+            return None
+
+
+def serve():
+    server = grpc.server(ThreadPoolExecutor(max_workers=10))
+    matrix_multiplication_pb2_grpc.add_MatrixMultiplicationServicer_to_server(MatrixMultiplicationServicer(), server)
+    server.add_insecure_port('[::]:5004')
+    print("Servidor Principal: Iniciando servidor en el puerto 5004")
+    server.start()
+    server.wait_for_termination()
+
+
+if __name__ == '__main__':
+    serve()
