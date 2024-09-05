@@ -17,12 +17,16 @@ class MatrixMultiplicationServicer(matrix_multiplication_pb2_grpc.MatrixMultipli
         print(f"Datos enviados al servidor (matriz A): {matrix_a}")
         print(f"Datos enviados al servidor (matriz B): {matrix_b}")
 
-        # Dividir la matriz A en dos partes:
-        mid = size * size // 2
-        a1, a2 = matrix_a[:mid], matrix_a[mid:]
+        # Dividir la matriz A por filas:
+        rows_a1 = (size + 1) // 2  # La primera parte tiene una fila más si N es impar
+        rows_a2 = size // 2
 
-        # Dividir la matriz B en dos partes:
-        b1, b2 = matrix_b[:mid], matrix_b[mid:]
+        a1 = matrix_a[:rows_a1 * size]
+        a2 = matrix_a[rows_a1 * size:]
+
+        # Dividir la matriz B por filas:
+        b1 = matrix_b[:rows_a1 * size]
+        b2 = matrix_b[rows_a1 * size:]
 
         print(f"Servidor Principal: Tamaño de la matriz A1: {len(a1)}, B1: {len(b1)}")
         print(f"Servidor Principal: Tamaño de la matriz A2: {len(a2)}, B2: {len(b2)}")

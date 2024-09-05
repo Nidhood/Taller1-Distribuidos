@@ -1,5 +1,4 @@
 import grpc
-import json
 import time
 import matrix_multiplication_pb2
 import matrix_multiplication_pb2_grpc

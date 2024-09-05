@@ -15,12 +15,16 @@ class MatrixMultiplicationServicer(matrix_multiplication_pb2_grpc.MatrixMultipli
         print(f"Matrix A: {matrix_a}")
         print(f"Matrix B: {matrix_b}")
 
-        print(f"Matrix A size: {matrix_a.size}, expected shape: ({size // 2}, {size})")
-        print(f"Matrix B size: {matrix_b.size}, expected shape: ({size // 2}, {size})")
+        rows_a = len(matrix_a) // size
+        rows_b = len(matrix_b) // size
+
+        print(f"Matrix A size: {matrix_a.size}, expected shape: ({rows_a}, {size})")
+        print(f"Matrix B size: {matrix_b.size}, expected shape: ({rows_b}, {size})")
 
         try:
-            matrix_a = matrix_a.reshape(size // 2, size)
-            matrix_b = matrix_b.reshape(size // 2, size)
+            matrix_a = matrix_a.reshape(rows_a, size)
+            matrix_b = matrix_b.reshape(rows_b, size)
+
         except ValueError as e:
             context.set_code(grpc.StatusCode.UNKNOWN)
             context.set_details(f'Exception calling application: {e}')
@@ -30,7 +34,6 @@ class MatrixMultiplicationServicer(matrix_multiplication_pb2_grpc.MatrixMultipli
         print(f"Matrix Resultado: {result}")
         print("Servidor Operación 2: Devolviendo resultado")
         return matrix_multiplication_pb2.MatrixResult(result=result)
-
 
 def serve():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
