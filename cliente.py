@@ -1,5 +1,4 @@
 import grpc
-import json
 import time
 import matrix_multiplication_pb2
 import matrix_multiplication_pb2_grpc
@@ -22,6 +21,7 @@ def main():
     try:
         with grpc.insecure_channel(f'{host}:{port}') as channel:
             stub = matrix_multiplication_pb2_grpc.MatrixMultiplicationStub(channel)
+            print("Conexión exitosa al servidor.")
             while True:
                 try:
                     N = int(input("\nIngrese la dimensión de las matrices (N): "))
@@ -41,7 +41,7 @@ def main():
 
 
 
-            print("Enviando datos al servidor...")
+            print("\nEnviando datos al servidor...")
             response = stub.Multiply(matrix_multiplication_pb2.MatrixPair(
                 matrix_a=[item for sublist in matrix_a for item in sublist],
                 matrix_b=[item for sublist in matrix_b for item in sublist],
@@ -51,10 +51,10 @@ def main():
 
             # Convertir la lista plana a una matriz 2D
             result_matrix_2d = [result_matrix[i * N:(i + 1) * N] for i in range(N)]
-
-            print(f"Respuesta recibida.")
+            print("Respuesta recibida.")
             print("Resultado de la multiplicación de matrices:")
             print_matrix(result_matrix_2d, "Resultado")
+            print("\nConexión cerrada. Operación completada.")
 
     except grpc.RpcError as e:
         print(f"Error al conectar con el servidor: {e}")
